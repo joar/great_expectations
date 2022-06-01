@@ -13,7 +13,7 @@ from tests.integration.docusaurus.expectations.creating_custom_expectations.expe
 )
 
 
-def test_parameterized_expect_table_query_column_value_frequency_to_meet_threshold(
+def test_expect_table_query_column_value_frequency_to_meet_threshold(
     titanic_v013_multi_datasource_multi_execution_engine_data_context_with_checkpoints_v1_with_empty_store_stats_enabled,
 ):
     context: DataContext = titanic_v013_multi_datasource_multi_execution_engine_data_context_with_checkpoints_v1_with_empty_store_stats_enabled
