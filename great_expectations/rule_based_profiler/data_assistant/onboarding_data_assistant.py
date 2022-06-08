@@ -144,6 +144,7 @@ class OnboardingDataAssistant(DataAssistant):
             expectation_configurations=data_assistant_result.expectation_configurations,
             citation=data_assistant_result.citation,
             execution_time=data_assistant_result.execution_time,
+            usage_statistics_handler=data_assistant_result.usage_statistics_handler,
         )
 
     @staticmethod
@@ -279,8 +280,10 @@ class OnboardingDataAssistant(DataAssistant):
 
         # Step-2: Declare "ParameterBuilder" for every metric of interest.
 
-        column_histogram_metric_multi_batch_parameter_builder_for_metrics: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.get_column_histogram_metric_multi_batch_parameter_builder(
-            json_serialize=True
+        column_partition_parameter_builder_for_metrics: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.build_partition_parameter_builder(
+            name="column_values.partition",
+            bucketize_data=True,
+            json_serialize=True,
         )
         column_column_quantile_values_metric_multi_batch_parameter_builder_for_metrics: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.get_column_quantile_values_metric_multi_batch_parameter_builder(
             json_serialize=True
@@ -487,7 +490,6 @@ class OnboardingDataAssistant(DataAssistant):
                 0.75,
             ],
             "allow_relative_error": "linear",
-            "bins": 10,
             "false_positive_rate": 0.05,
             "quantile_statistic_interpolation_method": "auto",
             "estimator": "bootstrap",
@@ -501,7 +503,7 @@ class OnboardingDataAssistant(DataAssistant):
             "round_decimals": 1,
         }
         parameter_builders: List[ParameterBuilder] = [
-            column_histogram_metric_multi_batch_parameter_builder_for_metrics,
+            column_partition_parameter_builder_for_metrics,
             column_column_quantile_values_metric_multi_batch_parameter_builder_for_metrics,
             column_min_metric_multi_batch_parameter_builder_for_metrics,
             column_max_metric_multi_batch_parameter_builder_for_metrics,
@@ -554,8 +556,10 @@ class OnboardingDataAssistant(DataAssistant):
 
         # Step-2: Declare "ParameterBuilder" for every metric of interest.
 
-        column_histogram_metric_multi_batch_parameter_builder_for_metrics: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.get_column_histogram_metric_multi_batch_parameter_builder(
-            json_serialize=True
+        column_partition_parameter_builder_for_metrics: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.build_partition_parameter_builder(
+            name="column_values.partition",
+            bucketize_data=True,
+            json_serialize=True,
         )
         column_column_quantile_values_metric_multi_batch_parameter_builder_for_metrics: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.get_column_quantile_values_metric_multi_batch_parameter_builder(
             json_serialize=True
@@ -660,7 +664,7 @@ class OnboardingDataAssistant(DataAssistant):
             "mostly": 1.0,
             "strict_min": False,
             "strict_max": False,
-            "bins": 10,
+            "allow_relative_error": "linear",
             "false_positive_rate": 0.05,
             "quantile_statistic_interpolation_method": "auto",
             "estimator": "bootstrap",
@@ -674,7 +678,7 @@ class OnboardingDataAssistant(DataAssistant):
             "round_decimals": 1,
         }
         parameter_builders: List[ParameterBuilder] = [
-            column_histogram_metric_multi_batch_parameter_builder_for_metrics,
+            column_partition_parameter_builder_for_metrics,
             column_column_quantile_values_metric_multi_batch_parameter_builder_for_metrics,
             column_min_metric_multi_batch_parameter_builder_for_metrics,
             column_max_metric_multi_batch_parameter_builder_for_metrics,
@@ -741,7 +745,8 @@ class OnboardingDataAssistant(DataAssistant):
             json_serialize=True,
         )
         column_values_to_match_regex_parameter_builder_for_validations: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.build_regex_pattern_string_parameter_builder(
-            name="column_values.match_regex", json_serialize=True
+            name="column_values.match_regex",
+            json_serialize=True,
         )
 
         # Step-4: Pass "validation" "ParameterBuilderConfig" objects to every "DefaultExpectationConfigurationBuilder", responsible for emitting "ExpectationConfiguration" (with specified "expectation_type").
@@ -968,7 +973,7 @@ class OnboardingDataAssistant(DataAssistant):
                 "lower_bound": 0.0,
                 "upper_bound": None,
             },
-            "round_decimals": 1,
+            "round_decimals": 4,
         }
         parameter_builders: List[ParameterBuilder] = [
             column_distinct_values_count_metric_multi_batch_parameter_builder_for_metrics,
