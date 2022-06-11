@@ -348,9 +348,13 @@ class BaseDataContext(EphemeralDataContext, ConfigPeer):
             )
         self._ge_cloud_mode = ge_cloud_mode
         self._ge_cloud_config = ge_cloud_config
-        self._project_config = self._apply_global_config_overrides(
-            config=project_config
-        )
+
+        # self._project_config = self._apply_global_config_overrides(
+        #    config=project_config
+        # )
+
+        self._project_config = project_config
+        self._apply_global_config_overrides_old()
 
         if context_root_dir is not None:
             context_root_dir = os.path.abspath(context_root_dir)
@@ -482,13 +486,70 @@ class BaseDataContext(EphemeralDataContext, ConfigPeer):
                 # caught at the context.get_batch() step. So we just pass here.
                 pass
 
+    def _apply_global_config_overrides_old(self) -> None:
+        # check for global usage statistics opt out
+        validation_errors = {}
+
+        if self._check_global_usage_statistics_opt_out():
+            logger.info(
+                "Usage statistics is disabled globally. Applying override to project_config."
+            )
+            self.config.anonymous_usage_statistics.enabled = False
+
+        # check for global data_context_id
+        global_data_context_id = self._get_global_config_value(
+            environment_variable="GE_DATA_CONTEXT_ID",
+            conf_file_section="anonymous_usage_statistics",
+            conf_file_option="data_context_id",
+        )
+        if global_data_context_id:
+            data_context_id_errors = anonymizedUsageStatisticsSchema.validate(
+                {"data_context_id": global_data_context_id}
+            )
+            if not data_context_id_errors:
+                logger.info(
+                    "data_context_id is defined globally. Applying override to project_config."
+                )
+                self.config.anonymous_usage_statistics.data_context_id = (
+                    global_data_context_id
+                )
+            else:
+                validation_errors.update(data_context_id_errors)
+        # check for global usage_statistics url
+        global_usage_statistics_url = self._get_global_config_value(
+            environment_variable="GE_USAGE_STATISTICS_URL",
+            conf_file_section="anonymous_usage_statistics",
+            conf_file_option="usage_statistics_url",
+        )
+        if global_usage_statistics_url:
+            usage_statistics_url_errors = anonymizedUsageStatisticsSchema.validate(
+                {"usage_statistics_url": global_usage_statistics_url}
+            )
+            if not usage_statistics_url_errors:
+                logger.info(
+                    "usage_statistics_url is defined globally. Applying override to project_config."
+                )
+                self.config.anonymous_usage_statistics.usage_statistics_url = (
+                    global_usage_statistics_url
+                )
+            else:
+                validation_errors.update(usage_statistics_url_errors)
+        if validation_errors:
+            logger.warning(
+                "The following globally-defined config variables failed validation:\n{}\n\n"
+                "Please fix the variables if you would like to apply global values to project_config.".format(
+                    json.dumps(validation_errors, indent=2)
+                )
+            )
+
     def _apply_global_config_overrides(
         self, config: DataContextConfig
     ) -> DataContextConfig:
         # check for global usage statistics opt out
         validation_errors = {}
 
-        config_with_global_config_overrides: DataContextConfig = copy.deepcopy(config)
+        # config_with_global_config_overrides: DataContextConfig = copy.deepcopy(config)
+        config_with_global_config_overrides: DataContextConfig = config
 
         if self._check_global_usage_statistics_opt_out():
             logger.info(

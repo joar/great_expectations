@@ -14,7 +14,80 @@ from tests.cli.utils import assert_no_logging_messages_or_tracebacks
 @mock.patch(
     "great_expectations.core.usage_statistics.usage_statistics.UsageStatisticsHandler.emit"
 )
-def test_cli_datasource_list(
+def test_cli_datasource_list_previous_test_not_working(
+    mock_emit, empty_data_context, empty_sqlite_db, caplog, monkeypatch
+):
+    """Test an empty project and after adding a single datasource."""
+    monkeypatch.delenv(
+        "GE_USAGE_STATS", raising=False
+    )  # Undo the project-wide test default
+    context: DataContext = empty_data_context
+
+    runner = CliRunner(mix_stderr=False)
+    monkeypatch.chdir(os.path.dirname(context.root_directory))
+    result = runner.invoke(
+        cli,
+        "--v3-api datasource list",
+        catch_exceptions=False,
+    )
+
+    stdout = result.stdout.strip()
+    assert "No Datasources found" in stdout
+    assert context.list_datasources() == []
+
+    datasource_name = "wow_a_datasource"
+    _add_datasource_and_credentials_to_context(
+        context, datasource_name, empty_sqlite_db
+    )
+
+    runner = CliRunner(mix_stderr=False)
+    monkeypatch.chdir(os.path.dirname(context.root_directory))
+    result = runner.invoke(
+        cli,
+        ["--v3-api", "datasource", "list"],
+        catch_exceptions=False,
+    )
+    expected_output = """\
+Using v3 (Batch Request) API\x1b[0m
+1 Datasource found:[0m
+[0m
+ - [36mname:[0m wow_a_datasource[0m
+   [36mclass_name:[0m SqlAlchemyDatasource[0m
+""".strip()
+    stdout = result.stdout.strip()
+
+    assert stdout == expected_output
+
+    assert_no_logging_messages_or_tracebacks(caplog, result)
+    print(mock_emit.call_args_list)
+    expected_call_args_list = [
+        mock.call(
+            {"event_payload": {}, "event": "data_context.__init__", "success": True}
+        ),
+        mock.call(
+            {
+                "event": "cli.datasource.list.begin",
+                "event_payload": {"api_version": "v3"},
+                "success": True,
+            }
+        ),
+        mock.call(
+            {
+                "event": "cli.datasource.list.end",
+                "event_payload": {"api_version": "v3"},
+                "success": True,
+            }
+        ),
+    ]
+
+    assert mock_emit.call_count == len(expected_call_args_list)
+    assert mock_emit.call_args_list == expected_call_args_list
+
+
+@mock.patch(
+    "great_expectations.core.usage_statistics.usage_statistics.UsageStatisticsHandler.emit"
+)
+def test_cli_datasource_list_new_method_working(
     mock_emit, empty_data_context_stats_enabled, empty_sqlite_db, caplog, monkeypatch
 ):
     """Test an empty project and after adding a single datasource."""
