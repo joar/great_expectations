@@ -45,7 +45,10 @@ expected_existing_datasource_yaml = r"""
         class_name: InferredAssetSqlDataConnector
         include_schema_name: true
 """
+import pprint
 
+pprint.pprint(f"actual_datasource: {actual_datasource}")
+pprint.pprint(f"loaded_datasource: {yaml.safe_load(expected_existing_datasource_yaml)}")
 assert actual_datasource == yaml.safe_load(expected_existing_datasource_yaml)
 
 # check that checkpoint contains the right configuration
@@ -98,3 +101,49 @@ assert actual_checkpoint_yaml == yaml.safe_load(expected_checkpoint_yaml)
 # run checkpoint
 results = context.run_checkpoint(checkpoint_name="test_v3_checkpoint")
 assert results["success"] is True
+
+
+actual_datasource: {
+    "my_postgres_datasource": {
+        "module_name": "great_expectations.datasource",
+        "class_name": "Datasource",
+        "data_connectors": {
+            "default_runtime_data_connector_name": {
+                "batch_identifiers": ["default_identifier_name"],
+                "module_name": "great_expectations.datasource.data_connector",
+                "class_name": "RuntimeDataConnector",
+            },
+            "default_inferred_data_connector_name": {
+                "include_schema_name": True,
+                "module_name": "great_expectations.datasource.data_connector",
+                "class_name": "InferredAssetSqlDataConnector",
+            },
+        },
+        "execution_engine": {
+            "module_name": "great_expectations.execution_engine",
+            "class_name": "SqlAlchemyExecutionEngine",
+            "connection_string": "postgresql+psycopg2://postgres:@localhost/test_ci",
+        },
+    }
+}
+loaded_datasource: {
+    "my_postgres_datasource": {
+        "module_name": "great_expectations.datasource",
+        "class_name": "Datasource",
+        "execution_engine": {
+            "module_name": "great_expectations.execution_engine",
+            "class_name": "SqlAlchemyExecutionEngine",
+            "connection_string": "postgresql+psycopg2://postgres:@localhost/test_ci",
+        },
+        "data_connectors": {
+            "default_runtime_data_connector_name": {
+                "class_name": "RuntimeDataConnector",
+                "batch_identifiers": ["default_identifier_name"],
+            },
+            "default_inferred_data_connector_name": {
+                "class_name": "InferredAssetSqlDataConnector",
+                "include_schema_name": True,
+            },
+        },
+    }
+}

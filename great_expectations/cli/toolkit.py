@@ -393,6 +393,7 @@ def load_data_context_with_error_handling(
     ge_config_version: float
     try:
         directory = directory or DataContext.find_context_root_dir()
+        # this is where the DataContext gets invoked
         context = DataContext(context_root_dir=directory)
         ge_config_version = context.get_config().config_version
 

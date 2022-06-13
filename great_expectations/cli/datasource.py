@@ -47,6 +47,7 @@ class SupportedDatabaseBackends(enum.Enum):
 @click.pass_context
 def datasource(ctx: click.Context) -> None:
     """Datasource operations"""
+    # this is what is calling at runner.invoke
     ctx.obj.data_context = ctx.obj.get_data_context_from_config_file()
 
     cli_event_noun: str = "datasource"

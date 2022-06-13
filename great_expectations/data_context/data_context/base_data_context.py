@@ -548,10 +548,11 @@ class BaseDataContext(EphemeralDataContext, ConfigPeer):
         # check for global usage statistics opt out
         validation_errors = {}
 
-        # config_with_global_config_overrides: DataContextConfig = copy.deepcopy(config)
-        config_with_global_config_overrides: DataContextConfig = config
-
-        if self._check_global_usage_statistics_opt_out():
+        config_with_global_config_overrides: DataContextConfig = copy.deepcopy(config)
+        res = self._check_global_usage_statistics_opt_out()
+        print(f"hi I'm res: {res}")
+        # if self._check_global_usage_statistics_opt_out():
+        if res:
             logger.info(
                 "Usage statistics is disabled globally. Applying override to project_config."
             )
